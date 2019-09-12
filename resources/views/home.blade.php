@@ -49,7 +49,7 @@
                 <div class="card-body">
 
                    
-                    <span>{{Auth::user()->balance}}</span>
+                    <h2 class="text-center"><span class="text-center">{{Auth::user()->balance}} Rs</span></h2>
                 </div>
             </div>
         
