@@ -23,6 +23,8 @@ class RegisterController extends Controller
 
     use RegistersUsers;
 
+    public $counter = 0;
+
     /**
      * Where to redirect users after registration.
      *
@@ -63,20 +65,25 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-
+        // dd($data);
         if(isset($data['referral_id']))
         {
             $referral = User::where('referral_id',$data['referral_id'])->first();
                 
                 if($referral)
                 {
+                    // $data = User::find($referral->id)->owner;
                     $referral->balance = $referral->balance + 10;
-                    $referral->update();
+                    if($referral->update())
+                    {
+                       $this->percent_to_parent($referral->id);
+                    }
                 }
 
         }
 
         $user =  User::create([
+
             'name' => $data['name'],
             'email' => $data['email'],
             'referral_id' => uniqid('ref'),
@@ -84,8 +91,51 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
 
+        $this->counter = 0;
         return $user;
 
+        
+    }
+
+    public function percent_to_parent($id){
+
+        
+        
+        $data_parent = User::find($id);
+        // dd($data_parent);
+        
+        if($data_parent)
+        {   
+            if($data_parent->owner()->count() > 0)
+            {
+
+
+            $this->counter = $this->counter + 1;
+
+            $data_parent->owner->balance = $data_parent->owner->balance  + 10;
+            if($data_parent->owner->update() && ($this->counter < 6))
+            {
+                $this->percent_to_parent($data_parent->owner->id);
+            }
+
+            else 
+            {
+
+
+            return false;
+        }
+            
+        }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {   
+            
+            return false;
+        }
         
     }
 
